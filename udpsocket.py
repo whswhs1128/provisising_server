@@ -1,10 +1,16 @@
 import socket
+import threading
 import time
+from tkinter import INSERT
+
 import openpyxl
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 
 file: str
+udp_flag: bool
+flow_id: int
+left_num: int
 
 
 def get_now_time():
@@ -21,7 +27,12 @@ def get_device_id():
     for j in range(1, nrows):
         value = sheet1.cell(j, 2).value
         if value == 0:
-            print('剩余码数为：', sheet1.max_row - j)
+            global flow_id
+            global left_num
+            left_num = sheet1.max_row - j
+            flow_id = j - 1
+            print('剩余码数为：', left_num)
+            # print('liushuihao ', flow_id, 'left number is', left_num)
             return sheet1.cell(j, 1).value, j
 
 
@@ -38,9 +49,14 @@ def start_udp():
     print('start udp server...\n')
 
     print(socket.gethostbyname(socket.getfqdn(socket.gethostname())))
-    udp.bind((socket.gethostbyname(socket.getfqdn(socket.gethostname())), 1777))
+    try:
+        udp.bind((socket.gethostbyname(socket.getfqdn(socket.gethostname())), 1777))
+    except:
+        pass
+    global udp_flag
+    udp_flag = True
 
-    while True:
+    while udp_flag:
         rec_msg, addr = udp.recvfrom(1024)
         client_ip, client_port = addr
         print('client_ip:', client_ip, 'client_port:', client_port)
@@ -79,6 +95,15 @@ def start_udp():
                 print('无可用序列号，请重新导入！！\n')
                 pass
 
+        if not udp_flag:
+            print('stop udp server\n')
+            break
+
+
+def stop_udp():
+    global udp_flag
+    udp_flag = False
+
 
 def select_open_file():
     global file
@@ -86,10 +111,33 @@ def select_open_file():
     print('file:', file)
 
 
+def start_udp_thread():
+    t = threading.Thread(target=start_udp, name='aa')
+    t.start()
+
+
 root = tk.Tk()
-root.geometry("300x200")
-
+root.geometry("300x180")
+root.title("ipc烧录工具")
+file = './import.xlsx'
+get_device_id()
 tk.Button(root, text='选择文件', width=15, height=2, command=select_open_file).pack()
+tk.Button(root, text="开始udpserver", width=15, height=2, command=start_udp_thread).pack()
+tk.Button(root, text="停止udpserver", width=15, height=2, command=stop_udp).pack()
 
-tk.Button(root, text="开始udpserver", width=15, height=2, command=start_udp).pack()
+dstr = tk.StringVar()
+lb = tk.Label(root, textvariable=dstr)
+lb.pack()
+
+
+def get_flow_id():
+    global flow_id
+    global left_num
+    string = '流水号：', flow_id, '剩余码数：', left_num
+    dstr.set(string)
+    root.after(3000, get_flow_id)
+
+
+get_flow_id()
+
 root.mainloop()
