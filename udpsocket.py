@@ -12,7 +12,8 @@ def get_now_time():
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 print('start udp server...\n')
 
-udp.bind(('192.168.1.104', 1777))
+print(socket.gethostbyname(socket.getfqdn(socket.gethostname())))
+udp.bind((socket.gethostbyname(socket.getfqdn(socket.gethostname())), 1777))
 
 while True:
     rec_msg, addr = udp.recvfrom(1024)
