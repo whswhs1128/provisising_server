@@ -20,30 +20,34 @@ while True:
     print('client_ip:', client_ip, 'client_port:', client_port)
 
     print('msg from client:', rec_msg.decode('utf8'))
-    if rec_msg.decode('utf8') == "recv ok":
+    if rec_msg.decode('utf8') == "recv":
         try:
             j = get_device_id()[1]
             set_token_used(j)
+            print('烧录成功！\n')
         except:
             print('无可用序列号，请重新导入！！\n')
             pass
 
-    if rec_msg.decode('utf8') == "ask id":
+    if rec_msg.decode('utf8') == "ask1":
         try:
             ack_msg = get_device_id()[0]
+            print(ack_msg)
             udp.sendto(ack_msg.encode('utf8'), addr)
         except:
             print('无可用序列号，请重新导入！！\n')
             pass
 
-    if rec_msg.decode('utf8') == "ask date":
+    if rec_msg.decode('utf8') == "ask2":
         ack_msg = get_now_time()
+        print(ack_msg)
         udp.sendto(ack_msg.encode('utf8'), addr)
 
-    if rec_msg.decode('utf8') == "ask flow id":
+    if rec_msg.decode('utf8') == "ask3":
         try:
-            ack_msg = get_device_id()[1]
+            ack_msg = get_device_id()[1] - 1
             ack_msg = str(ack_msg)
+            print(ack_msg)
             udp.sendto(ack_msg.encode('utf8'), addr)
         except:
             print('无可用序列号，请重新导入！！\n')
