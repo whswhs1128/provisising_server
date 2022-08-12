@@ -1,17 +1,18 @@
 import socket
 import threading
 import time
-from tkinter import INSERT
 
 import openpyxl
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 
+import udp
+
 file: str
 udp_flag: bool
 flow_id: int
 left_num: int
-
+udp: socket
 
 def get_now_time():
     now = time.localtime()
@@ -56,6 +57,7 @@ def display_result():
 
 
 def start_udp():
+    global udp
     udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     print('start udp server...\n')
 
@@ -115,6 +117,8 @@ def start_udp():
 def stop_udp():
     global udp_flag
     udp_flag = False
+    global udp
+    udp.sendto('123'.encode('utf8'), (socket.gethostbyname(socket.getfqdn(socket.gethostname())), 1777))
 
 
 def select_open_file():
