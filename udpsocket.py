@@ -26,13 +26,12 @@ def get_device_id():
     nrows = sheet1.max_row + 1
     for j in range(1, nrows):
         value = sheet1.cell(j, 2).value
+        global flow_id
+        global left_num
+        left_num = sheet1.max_row - j
+        flow_id = j - 1
         if value == 0:
-            global flow_id
-            global left_num
-            left_num = sheet1.max_row - j
-            flow_id = j - 1
             print('剩余码数为：', left_num)
-            # print('liushuihao ', flow_id, 'left number is', left_num)
             return sheet1.cell(j, 1).value, j
 
 
@@ -42,6 +41,18 @@ def set_token_used(k):
     sheet1.cell(k, 2).value = "1"
     wb.save(str(file))
     pass
+
+
+def display_off():
+    string = ''
+    result.set(string)
+
+
+def display_result():
+    global flow_id
+    string = '流水号', flow_id, "烧录成功！ 下一台..."
+    result.set(string)
+    root.after(3000, display_off())
 
 
 def start_udp():
@@ -67,6 +78,7 @@ def start_udp():
                 j = get_device_id()[1]
                 set_token_used(j)
                 print('烧录成功！\n')
+                display_result()
             except:
                 print('无可用序列号，请重新导入！！\n')
                 pass
@@ -112,22 +124,8 @@ def select_open_file():
 
 
 def start_udp_thread():
-    t = threading.Thread(target=start_udp, name='aa')
-    t.start()
-
-
-root = tk.Tk()
-root.geometry("300x180")
-root.title("ipc烧录工具")
-file = './import.xlsx'
-get_device_id()
-tk.Button(root, text='选择文件', width=15, height=2, command=select_open_file).pack()
-tk.Button(root, text="开始udpserver", width=15, height=2, command=start_udp_thread).pack()
-tk.Button(root, text="停止udpserver", width=15, height=2, command=stop_udp).pack()
-
-dstr = tk.StringVar()
-lb = tk.Label(root, textvariable=dstr)
-lb.pack()
+    udp_thread = threading.Thread(target=start_udp, name='aa')
+    udp_thread.start()
 
 
 def get_flow_id():
@@ -137,6 +135,32 @@ def get_flow_id():
     dstr.set(string)
     root.after(3000, get_flow_id)
 
+
+root = tk.Tk()
+root.geometry("400x360")
+root.title("ipc烧录工具")
+file = './import.xlsx'
+get_device_id()
+longtext = """
+操作指南：
+
+  1.选择导入设备id的excel文件。
+  2.点击开始运行
+  3.自动烧录
+"""
+tk.Label(root, text=longtext, anchor="w", justify="left").pack()
+
+tk.Button(root, text='选择文件', width=15, height=2, command=select_open_file).pack()
+tk.Button(root, text="开始运行", width=15, height=2, command=start_udp_thread).pack()
+tk.Button(root, text="停止运行", width=15, height=2, command=stop_udp).pack()
+
+dstr = tk.StringVar()
+lb = tk.Label(root, textvariable=dstr)
+lb.pack()
+
+result = tk.StringVar()
+lb2 = tk.Label(root, textvariable=result, width=30, height=2, fg='red')
+lb2.pack()
 
 get_flow_id()
 
