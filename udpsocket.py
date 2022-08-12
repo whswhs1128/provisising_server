@@ -9,10 +9,11 @@ from tkinter.filedialog import askopenfilename
 import udp
 
 file: str
-udp_flag: bool
+udp_flag: bool = False
 flow_id: int
 left_num: int
 udp: socket
+
 
 def get_now_time():
     now = time.localtime()
@@ -135,7 +136,9 @@ def start_udp_thread():
 def get_flow_id():
     global flow_id
     global left_num
-    string = '流水号：', flow_id, '剩余码数：', left_num
+    global udp_flag
+
+    string = '流水号：', flow_id, '剩余码数：', left_num, '运行状态：', '运行' if udp_flag else '停止'
     dstr.set(string)
     root.after(3000, get_flow_id)
 
