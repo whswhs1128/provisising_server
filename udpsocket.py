@@ -1,3 +1,4 @@
+import os
 import socket
 import threading
 import time
@@ -126,6 +127,8 @@ def select_open_file():
     global file
     file = askopenfilename(title='选择文件', filetypes=[('excel文件', '*.xlsx')])
     print('file:', file)
+    get_device_id()
+    get_flow_id()
 
 
 def start_udp_thread():
@@ -147,7 +150,6 @@ root = tk.Tk()
 root.geometry("400x360")
 root.title("ipc烧录工具")
 file = './import.xlsx'
-get_device_id()
 longtext = """
 操作指南：
 
@@ -169,6 +171,5 @@ result = tk.StringVar()
 lb2 = tk.Label(root, textvariable=result, width=30, height=2, fg='red')
 lb2.pack()
 
-get_flow_id()
 
 root.mainloop()
